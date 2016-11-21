@@ -26,7 +26,9 @@ def parseText(text):
                 if len(content) != 0:
                     content[0] = content[0][1:]  #strip leading ":"
                 player = "-1"
-            tokens = content[0].split("$", 1)
+            tokens = []
+            if len(content) != 0:
+                tokens = content[0].split("$", 1)
             if len(tokens) == 2 and tokens[0] == "":
                 botcommand, content = tokens[1], content[1:]
                 botcommand = botcommand.strip()
@@ -123,4 +125,3 @@ while True:
     receive(irc)
     sleep(1)
 
-KappaNerdKappa
