@@ -23,7 +23,8 @@ def parseText(text):
                 player = words[3][4:-2]
             else:
                 content = words[3:]
-                content[0] = content[0][1:]  #strip leading ":"
+                if len(content) != 0:
+                    content[0] = content[0][1:]  #strip leading ":"
                 player = "-1"
             tokens = content[0].split("$", 1)
             if len(tokens) == 2 and tokens[0] == "":
