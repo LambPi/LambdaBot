@@ -1,8 +1,22 @@
 from cStringIO import StringIO
+import math
+
+
+"""
+E = TE'
+E' = $|+E|-E
+T = FT'
+T' = $|*T|/T
+F = IF'
+F' = $|^F
+I = -N|N|-(E)|(E)|sqrt(E)|-sqrt(E)
+N = int|float 
+"""
+
 
 def next_token(inputstream):
 	token_type, token_value = _next_token(inputstream)
-	print token_type, token_value
+	#print token_type, token_value
 	return token_type, token_value
 
 def look_ahead(inputstream):
@@ -13,8 +27,13 @@ def look_ahead(inputstream):
 
 def _next_token(inputstream):
 	c = inputstream.read(1)
+	if c == "s":
+		if inputstream.read(4) == "qrt(":
+			return "SQRT", "sqrt("
 	if c == "":
 		return None, None
+	if c == "^":
+		return "POWER", "^"
 	if c == "+":
 		return "PLUS", "+"
 	if c == "-":
@@ -47,13 +66,14 @@ def _next_token(inputstream):
 					except:
 						pass
 				raise Exception("Unsupported number format")
-
+	else:
+		raise Exception("Unsupported character/function")
 
 def left(io):
 	return io.getvalue()[io.tell():]
 
 def expression(inputstream):
-	print ("expr: inputstream = ", left(inputstream))
+	#print ("expr: inputstream = ", left(inputstream))
 	result = term(inputstream)
 	token_type, token_value = look_ahead(inputstream)
 	while token_type == "PLUS" or token_type == "MINUS":
@@ -66,7 +86,7 @@ def expression(inputstream):
 	return result
 
 def term(inputstream):
-	print ("term: inputstream = ", left(inputstream))
+	#print ("term: inputstream = ", left(inputstream))
 	result = factor(inputstream)
 	token_type, token_value = look_ahead(inputstream)
 	while token_type == "MULT" or token_type == "DIV":
@@ -79,7 +99,17 @@ def term(inputstream):
 	return result
 
 def factor(inputstream):
-	print ("factor: inputstream = ", left(inputstream))
+	result = integer(inputstream)
+	token_type, token_value = look_ahead(inputstream)
+	while token_type == "POWER":
+		token_type, token_value = next_token(inputstream)
+		if token_type == "POWER":
+			result = result**(integer(inputstream))
+		token_type, token_value = look_ahead(inputstream)
+	return result
+
+def integer(inputstream):
+	#print ("factor: inputstream = ", left(inputstream))
 	neg = 1
 	token_type, token_value = look_ahead(inputstream)
 	if token_type == "MINUS":
@@ -88,6 +118,11 @@ def factor(inputstream):
 	token_type, token_value = next_token(inputstream)
 	if token_type == "INT" or token_type == "FLOAT":
 		return token_value * neg
+	if token_type == "SQRT":
+		result = expression(inputstream)
+		token_type, token_value = next_token(inputstream)
+		if token_type == "RPAREN":
+			return math.sqrt(result) * neg
 	if token_type == "LPAREN":
 		result = expression(inputstream)
 		token_type, token_value = next_token(inputstream)
